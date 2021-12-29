@@ -5,65 +5,53 @@ using UnityEngine;
 public class AlarmSignal : MonoBehaviour
 {
     private float _runningTime;
-    private bool _isWentOff = false;
+    private bool _isWork = false;
     private float _maxVolume = 1;
-    private float _minVolume = 0.5f;
+    private float _minVolume = 0.3f;
     private float _durationOfVolumeChange = 1.2f;
-    private int _crossingCount = 0;
+    private AudioSource _sound;
 
-    private void OnTriggerEnter2D(Collider2D collision)
+    private void Awake()
     {
-        _crossingCount++;
-
-        if (_crossingCount == 1)
-        {
-            _isWentOff = true;
-            GetComponent<AudioSource>().Play();
-        }
-        else
-        {
-            _isWentOff = false;
-            GetComponent<AudioSource>().Stop();
-        }
+        _sound = GetComponent<AudioSource>();
     }
 
-    private void Start()
+    private void OnTriggerEnter(Collider other)
     {
-        StartCoroutine(HowlDown());
+        _isWork = true;
+        _sound.Play();
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        _isWork = false;
+        _sound.Stop();
     }
 
     private void Update()
     {
-        if (_isWentOff)
-        _runningTime += Time.deltaTime;
+        if (_isWork)
+            RaiseAndDownVolume();
     }
 
-    private IEnumerator HowlDown()
+    private void RaiseAndDownVolume()
     {
-        float loopTime = 2 * _durationOfVolumeChange;
+        int volumeChangesInFullCycle = 2;
+        float cycleTime = volumeChangesInFullCycle * _durationOfVolumeChange;
+        float normilizedTime = _runningTime / _durationOfVolumeChange;
 
-        while (true)
+        _runningTime += Time.deltaTime;
+
+        if (_runningTime <= _durationOfVolumeChange)
         {
-            while (_isWentOff)
-            {
-                float normilizedTime = _runningTime / _durationOfVolumeChange;
-
-                if (_runningTime <= _durationOfVolumeChange)
-                {
-                    GetComponent<AudioSource>().volume = Mathf.MoveTowards(_maxVolume, _minVolume, normilizedTime);
-                    yield return null;
-                }
-                else
-                {
-                    GetComponent<AudioSource>().volume = Mathf.MoveTowards(_minVolume, _maxVolume, normilizedTime - 1);
-                    yield return null;
-                }
-
-                if (_runningTime > loopTime)
-                    _runningTime = 0;
-            }
-
-            yield return null;
+            _sound.volume = Mathf.MoveTowards(_maxVolume, _minVolume, normilizedTime);
         }
+        else
+        {
+            _sound.volume = Mathf.MoveTowards(_minVolume, _maxVolume, normilizedTime - 1);
+        }
+
+        if (_runningTime > cycleTime)
+            _runningTime = 0;
     }
 }
