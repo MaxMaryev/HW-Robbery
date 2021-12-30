@@ -20,7 +20,7 @@ public class AlarmSignal : MonoBehaviour
         if (_durationOfVolumeChange <= 0)
         {
             _durationOfVolumeChange = 0.01f;
-            Debug.Log("! Автоматически выставлено минимальное значение продолжительности изменения звука сигнализации");
+            Debug.Log("! Автоматически выставлено минимальное значение продолжительности изменения громкости");
         }
     }
 
@@ -39,9 +39,7 @@ public class AlarmSignal : MonoBehaviour
     private void Update()
     {
         if (_isWork)
-        {
             RaiseAndDownVolume();
-        }
 
         if (_isSmoothShutdown)
         {
@@ -66,12 +64,8 @@ public class AlarmSignal : MonoBehaviour
     private void ChangeVolume(float finalVolume)
     {
         if (_sound.volume != finalVolume)
-        {
             _sound.volume = Mathf.MoveTowards(_sound.volume, finalVolume, Time.deltaTime);
-        }
         else
-        {
             _isChangingVolumeSwitchStatus = !_isChangingVolumeSwitchStatus;
-        }
     }
 }
