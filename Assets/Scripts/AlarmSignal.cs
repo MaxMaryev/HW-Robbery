@@ -4,16 +4,27 @@ using UnityEngine;
 
 public class AlarmSignal : MonoBehaviour
 {
+    [SerializeField] private float _durationOfVolumeChange;
+
+    private AudioSource _sound;
     private float _runningTime;
-    private bool _isWork = false;
+    private float _lastSavedVolume;
     private float _maxVolume = 1;
     private float _minVolume = 0.3f;
-    private float _durationOfVolumeChange = 1.2f;
-    private AudioSource _sound;
+    private bool _isChangingVolumeSwitchStatus = false;
+    private bool _isWork = false;
+    bool _isSmoothShutdown = false;
 
     private void Awake()
     {
         _sound = GetComponent<AudioSource>();
+        _lastSavedVolume = _sound.volume;
+
+        if (_durationOfVolumeChange <= 0)
+        {
+            _durationOfVolumeChange = 0.01f;
+            Debug.Log("! Автоматически выставлено минимальное значение продолжительности изменения звука сигнализации");
+        }
     }
 
     private void OnTriggerEnter(Collider other)
@@ -25,33 +36,50 @@ public class AlarmSignal : MonoBehaviour
     private void OnTriggerExit(Collider other)
     {
         _isWork = false;
-        _sound.Stop();
+        _isSmoothShutdown = true;
     }
 
     private void Update()
     {
         if (_isWork)
+        {
             RaiseAndDownVolume();
+            _lastSavedVolume = _sound.volume;
+        }
+
+        if (_isSmoothShutdown)
+        {
+            ChangeVolume(_lastSavedVolume, 0);
+
+            if(_sound.volume == 0)
+            {
+                _isSmoothShutdown = false;
+                _sound.Stop();
+            }
+        }
     }
 
     private void RaiseAndDownVolume()
     {
-        int volumeChangesInFullCycle = 2;
-        float cycleTime = volumeChangesInFullCycle * _durationOfVolumeChange;
-        float normilizedTime = _runningTime / _durationOfVolumeChange;
+        if(_isChangingVolumeSwitchStatus)
+        ChangeVolume(_minVolume, _maxVolume);
+        else
+        ChangeVolume(_maxVolume, _minVolume);
+    }
 
+    private void ChangeVolume(float startVolume, float finalVolume)
+    {
+        float normalizedTime = _runningTime / _durationOfVolumeChange;
         _runningTime += Time.deltaTime;
 
-        if (_runningTime <= _durationOfVolumeChange)
+        if (_sound.volume != finalVolume)
         {
-            _sound.volume = Mathf.MoveTowards(_maxVolume, _minVolume, normilizedTime);
+            _sound.volume = Mathf.MoveTowards(startVolume, finalVolume, normalizedTime);
         }
         else
         {
-            _sound.volume = Mathf.MoveTowards(_minVolume, _maxVolume, normilizedTime - 1);
-        }
-
-        if (_runningTime > cycleTime)
+            _isChangingVolumeSwitchStatus = !_isChangingVolumeSwitchStatus;
             _runningTime = 0;
+        }
     }
 }
