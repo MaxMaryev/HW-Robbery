@@ -13,7 +13,7 @@ public class AlarmSignal : MonoBehaviour
     private float _minVolume = 0.3f;
     private bool _isChangingVolumeSwitchStatus = false;
     private bool _isWork = false;
-    bool _isSmoothShutdown = false;
+    private bool _isSmoothShutdown = false;
 
     private void Awake()
     {
