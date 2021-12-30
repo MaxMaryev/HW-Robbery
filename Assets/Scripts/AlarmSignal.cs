@@ -7,8 +7,6 @@ public class AlarmSignal : MonoBehaviour
     [SerializeField] private float _durationOfVolumeChange;
 
     private AudioSource _sound;
-    private float _runningTime;
-    private float _lastSavedVolume;
     private float _maxVolume = 1;
     private float _minVolume = 0.3f;
     private bool _isChangingVolumeSwitchStatus = false;
@@ -18,7 +16,6 @@ public class AlarmSignal : MonoBehaviour
     private void Awake()
     {
         _sound = GetComponent<AudioSource>();
-        _lastSavedVolume = _sound.volume;
 
         if (_durationOfVolumeChange <= 0)
         {
@@ -44,12 +41,11 @@ public class AlarmSignal : MonoBehaviour
         if (_isWork)
         {
             RaiseAndDownVolume();
-            _lastSavedVolume = _sound.volume;
         }
 
         if (_isSmoothShutdown)
         {
-            ChangeVolume(_lastSavedVolume, 0);
+            ChangeVolume(0);
 
             if(_sound.volume == 0)
             {
@@ -62,24 +58,20 @@ public class AlarmSignal : MonoBehaviour
     private void RaiseAndDownVolume()
     {
         if(_isChangingVolumeSwitchStatus)
-        ChangeVolume(_minVolume, _maxVolume);
+        ChangeVolume(_maxVolume);
         else
-        ChangeVolume(_maxVolume, _minVolume);
+        ChangeVolume(_minVolume);
     }
 
-    private void ChangeVolume(float startVolume, float finalVolume)
+    private void ChangeVolume(float finalVolume)
     {
-        float normalizedTime = _runningTime / _durationOfVolumeChange;
-        _runningTime += Time.deltaTime;
-
         if (_sound.volume != finalVolume)
         {
-            _sound.volume = Mathf.MoveTowards(startVolume, finalVolume, normalizedTime);
+            _sound.volume = Mathf.MoveTowards(_sound.volume, finalVolume, Time.deltaTime);
         }
         else
         {
             _isChangingVolumeSwitchStatus = !_isChangingVolumeSwitchStatus;
-            _runningTime = 0;
         }
     }
 }
