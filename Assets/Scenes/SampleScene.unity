@@ -326,6 +326,22 @@ PrefabInstance:
       propertyPath: _pointInHouse
       value: 
       objectReference: {fileID: 899472729}
+    - target: {fileID: -804473188959127463, guid: b79d0b13355dc8f44b7956db61a82656, type: 3}
+      propertyPath: m_Height
+      value: 1.0000005
+      objectReference: {fileID: 0}
+    - target: {fileID: -804473188959127463, guid: b79d0b13355dc8f44b7956db61a82656, type: 3}
+      propertyPath: m_Radius
+      value: 0.13328312
+      objectReference: {fileID: 0}
+    - target: {fileID: -804473188959127463, guid: b79d0b13355dc8f44b7956db61a82656, type: 3}
+      propertyPath: m_Center.x
+      value: -0.0000000011824035
+      objectReference: {fileID: 0}
+    - target: {fileID: -804473188959127463, guid: b79d0b13355dc8f44b7956db61a82656, type: 3}
+      propertyPath: m_Center.z
+      value: -0.36671725
+      objectReference: {fileID: 0}
     - target: {fileID: 591664454139422138, guid: b79d0b13355dc8f44b7956db61a82656, type: 3}
       propertyPath: m_UseGravity
       value: 0
@@ -668,7 +684,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f32d430f13ae1c04da30620ed5bc0566, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _durationOfVolumeChange: 1.2
 --- !u!1 &1678216826
 GameObject:
   m_ObjectHideFlags: 0

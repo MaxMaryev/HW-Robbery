@@ -2,70 +2,62 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+[RequireComponent(typeof(AudioSource))]
 public class AlarmSignal : MonoBehaviour
 {
-    [SerializeField] private float _durationOfVolumeChange;
-
     private AudioSource _sound;
     private float _maxVolume = 1;
     private float _minVolume = 0.3f;
-    private bool _isChangingVolumeSwitchStatus = false;
-    private bool _isWork = false;
-    private bool _isSmoothShutdown = false;
+    private bool _isWork;
+    private Coroutine _upVolume;
+    private Coroutine _downVolume;
 
     private void Awake()
     {
         _sound = GetComponent<AudioSource>();
-
-        if (_durationOfVolumeChange <= 0)
-        {
-            _durationOfVolumeChange = 0.01f;
-            Debug.Log("! јвтоматически выставлено минимальное значение продолжительности изменени€ громкости");
-        }
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        _isWork = true;
-        _sound.Play();
+        StartCoroutine(Work());
     }
 
     private void OnTriggerExit(Collider other)
     {
-        _isWork = false;
-        _isSmoothShutdown = true;
+        StartCoroutine(Shutdown());
     }
 
-    private void Update()
+    private IEnumerator Work()
     {
-        if (_isWork)
-            RaiseAndDownVolume();
+        _isWork = true;
 
-        if (_isSmoothShutdown)
+        _sound.Play();
+
+        while (_isWork)
         {
-            ChangeVolume(0);
-
-            if(_sound.volume == 0)
-            {
-                _isSmoothShutdown = false;
-                _sound.Stop();
-            }
+            yield return _upVolume = StartCoroutine(ChangeVolume(_maxVolume));
+            yield return _downVolume = StartCoroutine(ChangeVolume(_minVolume));
         }
     }
 
-    private void RaiseAndDownVolume()
+    private IEnumerator ChangeVolume(float finalVolume)
     {
-        if(_isChangingVolumeSwitchStatus)
-        ChangeVolume(_maxVolume);
-        else
-        ChangeVolume(_minVolume);
+        while (_sound.volume != finalVolume)
+        {
+            _sound.volume = Mathf.MoveTowards(_sound.volume, finalVolume, Time.deltaTime);
+            yield return null;
+        }
     }
 
-    private void ChangeVolume(float finalVolume)
+    private IEnumerator Shutdown()
     {
-        if (_sound.volume != finalVolume)
-            _sound.volume = Mathf.MoveTowards(_sound.volume, finalVolume, Time.deltaTime);
-        else
-            _isChangingVolumeSwitchStatus = !_isChangingVolumeSwitchStatus;
+        if (_upVolume != null)
+            StopCoroutine(_upVolume);
+        else if (_downVolume != null)
+            StopCoroutine(_downVolume);
+
+        yield return StartCoroutine(ChangeVolume(0));
+
+        _sound.Stop();
     }
 }
