@@ -5,6 +5,8 @@ using UnityEngine;
 [RequireComponent(typeof(AudioSource))]
 public class AlarmSignal : MonoBehaviour
 {
+    [SerializeField] private Collider _robber;
+
     private AudioSource _sound;
     private float _maxVolume = 1;
     private float _minVolume = 0.3f;
@@ -19,12 +21,14 @@ public class AlarmSignal : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        StartCoroutine(Work());
+        if (other == _robber)
+            StartCoroutine(Work());
     }
 
     private void OnTriggerExit(Collider other)
     {
-        StartCoroutine(Shutdown());
+        if (other == _robber)
+            StartCoroutine(Shutdown());
     }
 
     private IEnumerator Work()
@@ -53,7 +57,7 @@ public class AlarmSignal : MonoBehaviour
     {
         if (_upVolume != null)
             StopCoroutine(_upVolume);
-        else if (_downVolume != null)
+        if (_downVolume != null)
             StopCoroutine(_downVolume);
 
         yield return StartCoroutine(ChangeVolume(0));
