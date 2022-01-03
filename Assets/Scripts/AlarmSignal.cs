@@ -10,8 +10,8 @@ public class AlarmSignal : MonoBehaviour
     private AudioSource _sound;
     private float _maxVolume = 1;
     private float _minVolume = 0.3f;
-    private bool _isWorkStart;
-    private bool _isShutdownStart;
+    private bool _isWorkStarted;
+    private bool _isShutdownStarted;
     private Coroutine _upVolume;
     private Coroutine _downVolume;
 
@@ -22,29 +22,29 @@ public class AlarmSignal : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other == _robber && _isWorkStart == false)
+        if (other == _robber && _isWorkStarted == false)
             StartCoroutine(Work());
     }
 
     private void OnTriggerExit(Collider other)
     {
-        if (other == _robber && _isShutdownStart == false)
+        if (other == _robber && _isShutdownStarted == false)
             StartCoroutine(Shutdown());
     }
 
     private IEnumerator Work()
     {
-        _isWorkStart = true;
+        _isWorkStarted = true;
 
         _sound.Play();
 
-        while (_isWorkStart)
+        while (_isWorkStarted)
         {
             yield return _upVolume = StartCoroutine(ChangeVolume(_maxVolume));
             yield return _downVolume = StartCoroutine(ChangeVolume(_minVolume));
         }
 
-        _isWorkStart = false;
+        _isWorkStarted = false;
     }
 
     private IEnumerator ChangeVolume(float targetVolume)
@@ -58,7 +58,7 @@ public class AlarmSignal : MonoBehaviour
 
     private IEnumerator Shutdown()
     {
-        _isShutdownStart = true;
+        _isShutdownStarted = true;
 
         if (_upVolume != null)
             StopCoroutine(_upVolume);
@@ -68,6 +68,6 @@ public class AlarmSignal : MonoBehaviour
         yield return StartCoroutine(ChangeVolume(0));
 
         _sound.Stop();
-        _isShutdownStart = false;
+        _isShutdownStarted = false;
     }
 }
