@@ -5,12 +5,13 @@ using UnityEngine;
 [RequireComponent(typeof(AudioSource))]
 public class AlarmSignal : MonoBehaviour
 {
-    [SerializeField] private Collider _robber;
+    [SerializeField] private Robber _robber;
 
     private AudioSource _sound;
     private float _maxVolume = 1;
     private float _minVolume = 0.3f;
-    private bool _isWork;
+    private bool _isWorkStart;
+    private bool _isShutdownStart;
     private Coroutine _upVolume;
     private Coroutine _downVolume;
 
@@ -21,40 +22,44 @@ public class AlarmSignal : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other == _robber)
+        if (other == _robber && _isWorkStart == false)
             StartCoroutine(Work());
     }
 
     private void OnTriggerExit(Collider other)
     {
-        if (other == _robber)
+        if (other == _robber && _isShutdownStart == false)
             StartCoroutine(Shutdown());
     }
 
     private IEnumerator Work()
     {
-        _isWork = true;
+        _isWorkStart = true;
 
         _sound.Play();
 
-        while (_isWork)
+        while (_isWorkStart)
         {
             yield return _upVolume = StartCoroutine(ChangeVolume(_maxVolume));
             yield return _downVolume = StartCoroutine(ChangeVolume(_minVolume));
         }
+
+        _isWorkStart = false;
     }
 
-    private IEnumerator ChangeVolume(float finalVolume)
+    private IEnumerator ChangeVolume(float targetVolume)
     {
-        while (_sound.volume != finalVolume)
+        while (_sound.volume != targetVolume)
         {
-            _sound.volume = Mathf.MoveTowards(_sound.volume, finalVolume, Time.deltaTime);
+            _sound.volume = Mathf.MoveTowards(_sound.volume, targetVolume, Time.deltaTime);
             yield return null;
         }
     }
 
     private IEnumerator Shutdown()
     {
+        _isShutdownStart = true;
+
         if (_upVolume != null)
             StopCoroutine(_upVolume);
         if (_downVolume != null)
@@ -63,5 +68,6 @@ public class AlarmSignal : MonoBehaviour
         yield return StartCoroutine(ChangeVolume(0));
 
         _sound.Stop();
+        _isShutdownStart = false;
     }
 }
